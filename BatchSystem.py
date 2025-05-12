@@ -20,7 +20,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-
 class Ui_BatchFileProcessingSystem(object):
     def setupUi(self, BatchFileProcessingSystem):
         BatchFileProcessingSystem.setObjectName("BatchFileProcessingSystem")
@@ -76,14 +75,14 @@ class Ui_BatchFileProcessingSystem(object):
         self.horizontalLayout_11.addWidget(self.ValLiEd)
         self.verticalLayout_5.addLayout(self.horizontalLayout_11)
         self.gridLayout_3.addLayout(self.verticalLayout_5, 0, 1, 2, 1)
-        self.SFilePathLab_15 = QtWidgets.QLabel(self.layoutWidget)
+        self.OnlycheckBox = QtWidgets.QCheckBox(self.layoutWidget)
+        self.OnlycheckBox.setMinimumSize(QtCore.QSize(0, 30))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(12)
-        self.SFilePathLab_15.setFont(font)
-        self.SFilePathLab_15.setText("")
-        self.SFilePathLab_15.setObjectName("SFilePathLab_15")
-        self.gridLayout_3.addWidget(self.SFilePathLab_15, 1, 0, 1, 1)
+        self.OnlycheckBox.setFont(font)
+        self.OnlycheckBox.setObjectName("OnlycheckBox")
+        self.gridLayout_3.addWidget(self.OnlycheckBox, 1, 0, 1, 1)
         self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
         self.plainTextEdit.setGeometry(QtCore.QRect(30, 30, 651, 511))
         self.plainTextEdit.setObjectName("plainTextEdit")
@@ -355,6 +354,7 @@ class Ui_BatchFileProcessingSystem(object):
         self.SplittrainvalLab.setText(_translate("BatchFileProcessingSystem", "划分训练集与验证集"))
         self.trainratio.setText(_translate("BatchFileProcessingSystem", "train ratio:"))
         self.valratio.setText(_translate("BatchFileProcessingSystem", "val ratio:  "))
+        self.OnlycheckBox.setText(_translate("BatchFileProcessingSystem", "Only image name"))
         self.BatchRenameLab.setText(_translate("BatchFileProcessingSystem", "批量重命名"))
         self.StartIndexLab.setText(_translate("BatchFileProcessingSystem", "起始数："))
         self.PrefixLab.setText(_translate("BatchFileProcessingSystem", "前缀："))
@@ -382,6 +382,7 @@ class Ui_BatchFileProcessingSystem(object):
         self.menu.setTitle(_translate("BatchFileProcessingSystem", "选项"))
         self.Helpaction.setText(_translate("BatchFileProcessingSystem", "帮助"))
         self.Exitaction.setText(_translate("BatchFileProcessingSystem", "退出"))
+
 
 
 class BatchFileProcessingSystem(QMainWindow, Ui_BatchFileProcessingSystem):
@@ -425,12 +426,13 @@ class BatchFileProcessingSystem(QMainWindow, Ui_BatchFileProcessingSystem):
             return
         self.is_gray = self.GrayCBox.currentIndex()
         self.is_meanstd = self.MSCBox.currentIndex()
+        self.only_image_name = self.OnlycheckBox.isChecked()
         self.batch_images_paths = self.get_image_path(self.PFilePath)
         try:
             # 标志位判断是否有有效操作
             has_operation = False
             if self.check_dataset_split_needed():
-                self.split_dataset(self.batch_images_paths)
+                self.split_dataset(self.batch_images_paths, self.only_image_name)
                 has_operation = True
 
             if self.check_rename_needed() or self.check_resize_needed() or \
@@ -450,7 +452,7 @@ class BatchFileProcessingSystem(QMainWindow, Ui_BatchFileProcessingSystem):
         except Exception as e:
             QMessageBox.critical(self, "错误", f"处理过程中发生错误：{str(e)}")
 
-    def split_dataset(self, images_paths):
+    def split_dataset(self, images_paths, only_image_name=False):
         test_ratio = 1. - (self.train_ratio + self.val_ratio)
 
         num_images = len(images_paths)
@@ -462,19 +464,23 @@ class BatchFileProcessingSystem(QMainWindow, Ui_BatchFileProcessingSystem):
                 open(os.path.join(self.SFilePath, 'val.txt'), 'w') as val_file, \
                 open(os.path.join(self.SFilePath, 'test.txt'), 'w') as test_file:
             for i, image_path in enumerate(images_paths):
-                if i < num_train:
-                    train_file.write(f"{image_path}\n")
-                    self.append_to_plaintext(f"{i} {image_path} 被写入训练集")
-                elif i < num_train + num_val:
-                    val_file.write(f"{image_path}\n")
-                    self.append_to_plaintext(f"{i} {image_path} 被写入验证集")
+                if only_image_name:
+                    image_name, _ = os.path.splitext(os.path.basename(image_path))
                 else:
-                    test_file.write(f"{image_path}\n")
-                    self.append_to_plaintext(f"{i} {image_path} 被写入测试集")
+                    image_name = image_path
+                if i < num_train:
+                    train_file.write(f"{image_name}\n")
+                    self.append_to_plaintext(f"{i} {image_name} 被写入训练集")
+                elif i < num_train + num_val:
+                    val_file.write(f"{image_name}\n")
+                    self.append_to_plaintext(f"{i} {image_name} 被写入验证集")
+                else:
+                    test_file.write(f"{image_name}\n")
+                    self.append_to_plaintext(f"{i} {image_name} 被写入测试集")
 
         self.append_to_plaintext(f"Successfully split {num_images} images into {num_train} train, {num_val} val, and {num_test} test.")
 
-    def rename_images(self, images_paths, resize=False, to_gray=False, meanstd=False):
+    def rename_images(self, images_paths, resize=False, to_gray=0, meanstd=0):
         start_index = self.rename_params['start']
         prefix = self.rename_params['prefix']
         suffix = self.rename_params['suffix']
@@ -495,7 +501,7 @@ class BatchFileProcessingSystem(QMainWindow, Ui_BatchFileProcessingSystem):
             new_path = os.path.join(self.SFilePath, new_image_name)
             try:
                 image = Image.open(image_path).convert(read_flag)
-                if meanstd:
+                if meanstd == 1:
                     pil_image = Image.open(image_path).convert('RGB')
                     img_asarray = np.asarray(pil_image) / 255.0
                     individual_mean = np.mean(img_asarray, axis=(0, 1))
