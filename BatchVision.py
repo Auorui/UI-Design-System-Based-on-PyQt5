@@ -14,8 +14,8 @@ from PIL import Image
 from natsort import natsorted
 from datetime import datetime
 from PyQt5.QtCore import QUrl
-from PyQt5.QtGui import QFont, QDesktopServices
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox, QLabel
+from PyQt5.QtGui import QFont, QDesktopServices, QIcon
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox, QLabel, QDialog
 from PyQt5 import QtCore, QtGui, QtWidgets
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -392,6 +392,19 @@ class BatchFileProcessingSystem(QMainWindow, Ui_BatchFileProcessingSystem):
         self.global_definition()
         self.PrepParameters()
         self.CallBackFunctions()
+        self.setWindowIcon(QIcon("instructions/icon/document.ico"))  # 修改为你的图标路径
+        self.setWindowTitle("批量文件处理系统 BatchVision")
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: #F5F5F5;
+            }
+            QPlainTextEdit {
+                background-color: white;
+                border: 2px solid #D3D3D3;
+                border-radius: 5px;
+                padding: 10px;
+            }
+        """)
 
     def global_definition(self):
         self.times_str = f'{datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}'
