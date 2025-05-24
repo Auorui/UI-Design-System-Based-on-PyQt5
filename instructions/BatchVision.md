@@ -2,6 +2,7 @@
 
 作者： Junrui Zeng(Auorui)
 微信： zjricetea(备注'BatchVision支持')
+分享： https://pan.baidu.com/s/1Kk2ZFWa9eXlrvdHf0I7hQQ?pwd=cb1j
 
 ## 🌟 系统概述
 一款基于PyQt5开发的桌面端批处理工具，集成三大核心功能：
