@@ -11,3 +11,12 @@ Summarize the UI designs I have done before
 - **扩展功能**：灰度化处理、图像统计（均值/标准差）
 
 详见[BatchVision.md](./instructions/BatchVision.md)
+
+## 相机采集界面
+### 🌟 系统概述
+一款基于PyQt5和OpenCV开发的桌面端相机采集与处理系统，提供完整的相机控制、图像处理和媒体录制功能。
+- **多参数实时调节：曝光时间、增益、亮度、对比度**
+- **RGB三通道独立调整：精确控制颜色平衡**
+- **灰度图像转换：一键切换彩色/灰度模式**
+- **视频录制：视频录制，可显示帧率**
+详见博客：[Opencv与PyQt5设计一个摄像头界面](https://blog.csdn.net/m0_62919535/article/details/135440358)
