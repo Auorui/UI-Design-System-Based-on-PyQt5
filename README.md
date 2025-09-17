@@ -19,4 +19,5 @@ Summarize the UI designs I have done before
 - **RGB三通道独立调整：精确控制颜色平衡**
 - **灰度图像转换：一键切换彩色/灰度模式**
 - **视频录制：视频录制，可显示帧率**
+
 详见博客：[Opencv与PyQt5设计一个摄像头界面](https://blog.csdn.net/m0_62919535/article/details/135440358)
